@@ -52,6 +52,11 @@ class _NewGameScreenState extends State<NewGameScreen> {
                 decoration: const InputDecoration(labelText: 'Tore A'),
                 keyboardType: TextInputType.number,
                 validator: _validateInt,
+                onTap: () {
+                  if (_goalsA.text == '0') {
+                    _goalsA.clear();
+                  }
+                },
               ),
               const SizedBox(height: 24),
               TextFormField(
@@ -68,6 +73,11 @@ class _NewGameScreenState extends State<NewGameScreen> {
                 decoration: const InputDecoration(labelText: 'Tore B'),
                 keyboardType: TextInputType.number,
                 validator: _validateInt,
+                onTap: () {
+                  if (_goalsB.text == '0') {
+                    _goalsB.clear();
+                  }
+                },
               ),
               const SizedBox(height: 24),
               FilledButton.icon(

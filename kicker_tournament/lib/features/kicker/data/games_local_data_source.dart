@@ -126,7 +126,12 @@ class GamesLocalDataSource implements GamesRepository {
       );
     }
 
-    final leaderboard = allPlayers.values.toList()..sort((a, b) => b.wins.compareTo(a.wins));
+    final leaderboard = allPlayers.values.toList()
+      ..sort((a, b) {
+        final winsComparison = b.wins.compareTo(a.wins);
+        if (winsComparison != 0) return winsComparison;
+        return b.goalDifference.compareTo(a.goalDifference);
+      });
     return leaderboard;
   }
 
