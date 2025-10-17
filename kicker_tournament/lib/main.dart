@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'app.dart';
+import 'package:kicker_tournament/app.dart';
 
 void main() {
   runApp(const KickerApp());
