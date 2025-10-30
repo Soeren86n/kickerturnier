@@ -1,10 +1,13 @@
 import 'dart:convert';
+import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 
-class Player {
+@immutable
+class Player extends Equatable {
   final String id;
   final String name;
 
-  Player({required this.id, required this.name});
+  const Player({required this.id, required this.name});
 
   Map<String, dynamic> toMap() => {'id': id, 'name': name};
 
@@ -14,9 +17,13 @@ class Player {
       name: map['name'] as String,
     );
   }
+
+  @override
+  List<Object?> get props => [id, name];
 }
 
-class Game {
+@immutable
+class Game extends Equatable {
   final String id;
   final Player playerA;
   final Player playerB;
@@ -25,7 +32,7 @@ class Game {
   final String winnerId;
   final DateTime gamePlayedAt;
 
-  Game({
+  const Game({
     required this.id,
     required this.playerA,
     required this.playerB,
@@ -70,16 +77,28 @@ class Game {
   }
 
   static Game fromJson(String source) => fromMap(jsonDecode(source));
+
+  @override
+  List<Object?> get props => [
+        id,
+        playerA,
+        playerB,
+        goalsA,
+        goalsB,
+        winnerId,
+        gamePlayedAt,
+      ];
 }
 
-class LeaderboardEntry {
+@immutable
+class LeaderboardEntry extends Equatable {
   final Player player;
   final int wins;
   final int goalsScored;
   final int goalsConceded;
   final int gamesPlayed;
 
-  LeaderboardEntry({
+  const LeaderboardEntry({
     required this.player,
     required this.wins,
     required this.goalsScored,
@@ -88,4 +107,7 @@ class LeaderboardEntry {
   });
 
   int get goalDifference => goalsScored - goalsConceded;
+
+  @override
+  List<Object?> get props => [player, wins, goalsScored, goalsConceded, gamesPlayed];
 }
