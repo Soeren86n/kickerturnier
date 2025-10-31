@@ -1,11 +1,13 @@
+import 'package:equatable/equatable.dart';
 import 'package:kicker_tournament/features/kicker/models/game_models.dart';
 
-class GamesState {
+class GamesState extends Equatable {
   final bool isLoading;
   final bool hasError;
 
   final List<Game> games;
   final Game? selectedGame;
+  static const Object _noValue = Object();
 
   final List<LeaderboardEntry> leaderboard;
 
@@ -21,15 +23,24 @@ class GamesState {
     bool? isLoading,
     bool? hasError,
     List<Game>? games,
-    Game? selectedGame,
+    Object? selectedGame = _noValue,
     List<LeaderboardEntry>? leaderboard,
   }) {
     return GamesState(
       isLoading: isLoading ?? this.isLoading,
       hasError: hasError ?? this.hasError,
       games: games ?? this.games,
-      selectedGame: selectedGame ?? this.selectedGame,
+      selectedGame: identical(selectedGame, _noValue) ? this.selectedGame : selectedGame as Game?,
       leaderboard: leaderboard ?? this.leaderboard,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        isLoading,
+        hasError,
+        games,
+        selectedGame,
+        leaderboard,
+      ];
 }

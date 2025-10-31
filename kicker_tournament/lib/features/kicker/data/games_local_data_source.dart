@@ -31,7 +31,7 @@ class GamesLocalDataSource implements GamesRepository {
   @override
   Future<List<Game>> loadAllGames() async {
     await _ensureLoaded();
-    return _store;
+    return List<Game>.unmodifiable(_store);
   }
 
   @override
