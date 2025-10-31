@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:kicker_tournament/core/exceptions.dart';
 
 @immutable
 class Player extends Equatable {
@@ -12,10 +13,32 @@ class Player extends Equatable {
   Map<String, dynamic> toMap() => {'id': id, 'name': name};
 
   static Player fromMap(Map<String, dynamic> map) {
-    return Player(
-      id: map['id'] as String,
-      name: map['name'] as String,
-    );
+    try {
+      final id = map['id'] as String?;
+      final name = map['name'] as String?;
+
+      if (id == null || id.isEmpty) {
+        throw DataFormatException(
+          'Player id is missing or empty',
+          originalData: map,
+        );
+      }
+      if (name == null || name.isEmpty) {
+        throw DataFormatException(
+          'Player name is missing or empty',
+          originalData: map,
+        );
+      }
+
+      return Player(id: id, name: name);
+    } catch (e, stackTrace) {
+      if (e is DataFormatException) rethrow;
+      throw DataFormatException(
+        'Failed to parse Player from map',
+        originalData: map,
+        stackTrace: stackTrace,
+      );
+    }
   }
 
   @override
@@ -65,15 +88,83 @@ class Game extends Equatable {
   String toJson() => jsonEncode(toMap());
 
   static Game fromMap(Map<String, dynamic> map) {
-    return Game(
-      id: map['id'] as String,
-      playerA: Player.fromMap(map['playerA'] as Map<String, dynamic>),
-      playerB: Player.fromMap(map['playerB'] as Map<String, dynamic>),
-      goalsA: map['goalsA'] as int,
-      goalsB: map['goalsB'] as int,
-      winnerId: map['winnerId'] as String,
-      gamePlayedAt: DateTime.parse(map['gamePlayedAt'] as String),
-    );
+    try {
+      final id = map['id'] as String?;
+      if (id == null || id.isEmpty) {
+        throw DataFormatException(
+          'Game id is missing or empty',
+          originalData: map,
+        );
+      }
+
+      final playerAData = map['playerA'] as Map<String, dynamic>?;
+      final playerBData = map['playerB'] as Map<String, dynamic>?;
+      if (playerAData == null || playerBData == null) {
+        throw DataFormatException(
+          'Player data is missing',
+          originalData: map,
+        );
+      }
+
+      final playerA = Player.fromMap(playerAData);
+      final playerB = Player.fromMap(playerBData);
+
+      final goalsA = map['goalsA'] as int?;
+      final goalsB = map['goalsB'] as int?;
+      if (goalsA == null || goalsB == null || goalsA < 0 || goalsB < 0) {
+        throw DataFormatException(
+          'Goals are missing or invalid (must be >= 0)',
+          originalData: map,
+        );
+      }
+
+      final winnerId = map['winnerId'] as String? ?? '';
+      
+      final gamePlayedAtString = map['gamePlayedAt'] as String?;
+      if (gamePlayedAtString == null || gamePlayedAtString.isEmpty) {
+        throw DataFormatException(
+          'gamePlayedAt is missing',
+          originalData: map,
+        );
+      }
+
+      final DateTime gamePlayedAt;
+      try {
+        gamePlayedAt = DateTime.parse(gamePlayedAtString);
+      } catch (e) {
+        throw DataFormatException(
+          'Invalid gamePlayedAt format: $gamePlayedAtString',
+          originalData: map,
+        );
+      }
+
+      return Game(
+        id: id,
+        playerA: playerA,
+        playerB: playerB,
+        goalsA: goalsA,
+        goalsB: goalsB,
+        winnerId: winnerId,
+        gamePlayedAt: gamePlayedAt,
+      );
+    } catch (e, stackTrace) {
+      if (e is DataFormatException) rethrow;
+      throw DataFormatException(
+        'Failed to parse Game from map',
+        originalData: map,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  static Game? fromMapSafe(Map<String, dynamic> map) {
+    try {
+      return fromMap(map);
+    } catch (e) {
+      // Log silently, return null für fehlerhafte Einträge
+      debugPrint('Failed to parse Game: $e');
+      return null;
+    }
   }
 
   static Game fromJson(String source) => fromMap(jsonDecode(source));

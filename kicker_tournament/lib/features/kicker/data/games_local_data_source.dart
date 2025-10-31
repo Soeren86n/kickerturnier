@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:kicker_tournament/core/exceptions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kicker_tournament/features/kicker/data/games_repository.dart';
 import 'package:kicker_tournament/features/kicker/models/game_models.dart';
@@ -11,14 +13,39 @@ class GamesLocalDataSource implements GamesRepository {
 
   Future<void> _ensureLoaded() async {
     if (_loaded) return;
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString(_kGamesKey);
-    if (jsonString != null && jsonString.isNotEmpty) {
-      final List<dynamic> list = jsonDecode(jsonString);
-      _store
-        ..clear()
-        ..addAll(list.map((e) => Game.fromMap((e as Map).cast<String, dynamic>())));
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final jsonString = prefs.getString(_kGamesKey);
+
+      if (jsonString != null && jsonString.isNotEmpty) {
+        try {
+          final List<dynamic> list = jsonDecode(jsonString);
+          _store.clear();
+
+          // Fehlerhafte Einträge überspringen statt zu crashen
+          for (final item in list) {
+            try {
+              final map = (item as Map).cast<String, dynamic>();
+              final game = Game.fromMap(map);
+              _store.add(game);
+            } catch (e) {
+              // Einzelnen fehlerhaften Eintrag loggen und überspringen
+              debugPrint('Skipping corrupted game entry: $e');
+            }
+          }
+
+          debugPrint('Loaded ${_store.length} games from storage');
+        } catch (e) {
+          // JSON-Parsing fehlgeschlagen - Storage ist korrupt
+          debugPrint('Failed to parse games storage, starting fresh: $e');
+          _store.clear();
+        }
+      }
+    } catch (e) {
+      throw StorageException('Failed to load games from storage', cause: e as Exception?);
     }
+
     _loaded = true;
   }
 
