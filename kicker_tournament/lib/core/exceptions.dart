@@ -1,13 +1,12 @@
 class DataFormatException implements Exception {
-  final String message;
-  final dynamic originalData;
-  final StackTrace? stackTrace;
-
   DataFormatException(
     this.message, {
     this.originalData,
     this.stackTrace,
   });
+  final String message;
+  final dynamic originalData;
+  final StackTrace? stackTrace;
 
   @override
   String toString() {
@@ -21,11 +20,10 @@ class DataFormatException implements Exception {
 
 /// Exception für Storage-/Persistence-Fehler
 class StorageException implements Exception {
+  StorageException(this.message, {this.cause, this.stackTrace});
   final String message;
   final Object? cause;
   final StackTrace? stackTrace;
-
-  StorageException(this.message, {this.cause, this.stackTrace});
 
   @override
   String toString() {
@@ -39,10 +37,9 @@ class StorageException implements Exception {
 
 /// Exception für Validierungsfehler auf Domain-Ebene
 class ValidationException implements Exception {
+  ValidationException(this.message, {this.field});
   final String message;
   final String? field;
-
-  ValidationException(this.message, {this.field});
 
   @override
   String toString() {

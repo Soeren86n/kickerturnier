@@ -5,9 +5,9 @@ import 'package:kicker_tournament/features/kicker/cubit/games_state.dart';
 import 'package:kicker_tournament/utils/date_format_helper.dart';
 
 class GameDetailScreen extends StatefulWidget {
-  final String gameId;
-  
   const GameDetailScreen({super.key, required this.gameId});
+
+  final String gameId;
 
   @override
   State<GameDetailScreen> createState() => _GameDetailScreenState();
@@ -39,8 +39,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
           }
           if (status.isFailure) {
             return Center(
-              child:
-                  Text(status.message ?? 'Spiel konnte nicht geladen werden.'),
+              child: Text(status.message ?? 'Spiel konnte nicht geladen werden.'),
             );
           }
           if (game == null || !isCurrentGame) {
@@ -57,11 +56,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
                 const SizedBox(height: 8),
                 _row('Tore', '${game.goalsA} : ${game.goalsB}'),
                 const SizedBox(height: 8),
-                _row(
-                    'Gewinner',
-                    game.goalsA == game.goalsB
-                        ? 'Unentschieden'
-                        : (game.winner?.name ?? '–')),
+                _row('Gewinner', game.goalsA == game.goalsB ? 'Unentschieden' : (game.winner?.name ?? '–')),
                 const SizedBox(height: 8),
                 _row('Datum', Utils.formatDateTime(game.gamePlayedAt)),
               ],
@@ -77,10 +72,7 @@ class _GameDetailScreenState extends State<GameDetailScreen> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          SizedBox(
-              width: 120,
-              child: Text(label,
-                  style: const TextStyle(fontWeight: FontWeight.bold))),
+          SizedBox(width: 120, child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold))),
           const SizedBox(width: 8),
           Expanded(child: Text(value)),
         ],

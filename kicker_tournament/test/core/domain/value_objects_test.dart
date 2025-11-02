@@ -18,11 +18,13 @@ void main() {
     test('throws ValidationException for empty name', () {
       expect(
         () => PlayerName(''),
-        throwsA(isA<ValidationException>().having(
-          (e) => e.message,
-          'message',
-          contains('nicht leer'),
-        )),
+        throwsA(
+          isA<ValidationException>().having(
+            (e) => e.message,
+            'message',
+            contains('nicht leer'),
+          ),
+        ),
       );
     });
 
@@ -36,11 +38,13 @@ void main() {
     test('throws ValidationException for single-char name', () {
       expect(
         () => PlayerName('A'),
-        throwsA(isA<ValidationException>().having(
-          (e) => e.message,
-          'message',
-          contains('mindestens 2 Zeichen'),
-        )),
+        throwsA(
+          isA<ValidationException>().having(
+            (e) => e.message,
+            'message',
+            contains('mindestens 2 Zeichen'),
+          ),
+        ),
       );
     });
 
@@ -64,11 +68,13 @@ void main() {
     test('throws ValidationException for negative goals', () {
       expect(
         () => Goals(-1),
-        throwsA(isA<ValidationException>().having(
-          (e) => e.message,
-          'message',
-          contains('nicht negativ'),
-        )),
+        throwsA(
+          isA<ValidationException>().having(
+            (e) => e.message,
+            'message',
+            contains('nicht negativ'),
+          ),
+        ),
       );
     });
 

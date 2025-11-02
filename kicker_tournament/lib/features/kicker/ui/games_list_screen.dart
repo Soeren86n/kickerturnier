@@ -7,7 +7,6 @@ import 'package:kicker_tournament/features/kicker/models/game_models.dart';
 import 'package:kicker_tournament/utils/date_format_helper.dart';
 
 class GamesListScreen extends StatelessWidget {
-  static const route = '/';
   const GamesListScreen({super.key});
 
   @override
@@ -139,7 +138,8 @@ class GamesListScreen extends StatelessWidget {
               leading: CircleAvatar(child: Text('${i + 1}')),
               title: Text(entry.player.name),
               subtitle: Text(
-                  'Siege: ${entry.wins} · Tordiff: ${entry.goalDifference} · Tore: ${entry.goalsScored}:${entry.goalsConceded} · Spiele: ${entry.gamesPlayed}'),
+                'Siege: ${entry.wins} · Tordiff: ${entry.goalDifference} · Tore: ${entry.goalsScored}:${entry.goalsConceded} · Spiele: ${entry.gamesPlayed}',
+              ),
             );
           },
         );

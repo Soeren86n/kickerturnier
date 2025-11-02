@@ -5,7 +5,6 @@ import 'package:kicker_tournament/features/kicker/cubit/games_cubit.dart';
 import 'package:kicker_tournament/features/kicker/cubit/games_state.dart';
 
 class NewGameScreen extends StatefulWidget {
-  static const route = '/new';
   const NewGameScreen({super.key});
 
   @override
@@ -30,19 +29,15 @@ class _NewGameScreenState extends State<NewGameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final saveStatus =
-        context.select<GamesCubit, OperationStatus>((c) => c.state.saveStatus);
+    final saveStatus = context.select<GamesCubit, OperationStatus>((c) => c.state.saveStatus);
     final loading = saveStatus.isLoading;
 
     return BlocListener<GamesCubit, GamesState>(
-      listenWhen: (previous, current) =>
-          previous.saveStatus != current.saveStatus,
+      listenWhen: (previous, current) => previous.saveStatus != current.saveStatus,
       listener: (context, state) {
         if (state.saveStatus.isFailure) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-                content: Text(
-                    state.saveStatus.message ?? 'Speichern fehlgeschlagen.')),
+            SnackBar(content: Text(state.saveStatus.message ?? 'Speichern fehlgeschlagen.')),
           );
         } else if (state.saveStatus.isSuccess && context.canPop()) {
           context.pop();
@@ -61,9 +56,7 @@ class _NewGameScreenState extends State<NewGameScreen> {
                   controller: _nameA,
                   decoration: const InputDecoration(labelText: 'Spieler A'),
                   validator: (inputValue) =>
-                      (inputValue == null || inputValue.trim().isEmpty)
-                          ? 'Bitte Name eingeben'
-                          : null,
+                      (inputValue == null || inputValue.trim().isEmpty) ? 'Bitte Name eingeben' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -84,9 +77,7 @@ class _NewGameScreenState extends State<NewGameScreen> {
                   controller: _nameB,
                   decoration: const InputDecoration(labelText: 'Spieler B'),
                   validator: (inputValue) =>
-                      (inputValue == null || inputValue.trim().isEmpty)
-                          ? 'Bitte Name eingeben'
-                          : null,
+                      (inputValue == null || inputValue.trim().isEmpty) ? 'Bitte Name eingeben' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -121,7 +112,7 @@ class _NewGameScreenState extends State<NewGameScreen> {
                                 goalsB: goalsB,
                               );
                         },
-                )
+                ),
               ],
             ),
           ),

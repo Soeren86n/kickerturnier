@@ -1,15 +1,16 @@
 import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
-import 'package:kicker_tournament/core/logging/logger.dart';
 import 'package:kicker_tournament/core/exceptions.dart';
+import 'package:kicker_tournament/core/logging/logger.dart';
 
 @immutable
 class Player extends Equatable {
+  const Player({required this.id, required this.name});
+
   final String id;
   final String name;
-
-  const Player({required this.id, required this.name});
 
   Map<String, dynamic> toMap() => {'id': id, 'name': name};
 
@@ -48,14 +49,6 @@ class Player extends Equatable {
 
 @immutable
 class Game extends Equatable {
-  final String id;
-  final Player playerA;
-  final Player playerB;
-  final int goalsA;
-  final int goalsB;
-  final String winnerId;
-  final DateTime gamePlayedAt;
-
   const Game({
     required this.id,
     required this.playerA,
@@ -65,6 +58,13 @@ class Game extends Equatable {
     required this.winnerId,
     required this.gamePlayedAt,
   });
+  final String id;
+  final Player playerA;
+  final Player playerB;
+  final int goalsA;
+  final int goalsB;
+  final String winnerId;
+  final DateTime gamePlayedAt;
 
   Player? get winner {
     if (winnerId == playerA.id) {
@@ -184,12 +184,6 @@ class Game extends Equatable {
 
 @immutable
 class LeaderboardEntry extends Equatable {
-  final Player player;
-  final int wins;
-  final int goalsScored;
-  final int goalsConceded;
-  final int gamesPlayed;
-
   const LeaderboardEntry({
     required this.player,
     required this.wins,
@@ -197,10 +191,14 @@ class LeaderboardEntry extends Equatable {
     required this.goalsConceded,
     required this.gamesPlayed,
   });
+  final Player player;
+  final int wins;
+  final int goalsScored;
+  final int goalsConceded;
+  final int gamesPlayed;
 
   int get goalDifference => goalsScored - goalsConceded;
 
   @override
-  List<Object?> get props =>
-      [player, wins, goalsScored, goalsConceded, gamesPlayed];
+  List<Object?> get props => [player, wins, goalsScored, goalsConceded, gamesPlayed];
 }

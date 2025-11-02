@@ -16,11 +16,26 @@ void main() {
     Player playerC = const Player(id: 'p3', name: 'Hans');
 
     await repo.addGame(
-        playerA: playerA, playerB: playerB, goalsA: 10, goalsB: 1, createdAt: DateTime(2025, 1, 10, 10, 0));
+      playerA: playerA,
+      playerB: playerB,
+      goalsA: 10,
+      goalsB: 1,
+      createdAt: DateTime(2025, 1, 10, 10, 0),
+    );
     await repo.addGame(
-        playerA: playerB, playerB: playerC, goalsA: 5, goalsB: 5, createdAt: DateTime(2025, 1, 11, 9, 0));
+      playerA: playerB,
+      playerB: playerC,
+      goalsA: 5,
+      goalsB: 5,
+      createdAt: DateTime(2025, 1, 11, 9, 0),
+    );
     await repo.addGame(
-        playerA: playerC, playerB: playerA, goalsA: 10, goalsB: 1, createdAt: DateTime(2025, 1, 12, 8, 0));
+      playerA: playerC,
+      playerB: playerA,
+      goalsA: 10,
+      goalsB: 1,
+      createdAt: DateTime(2025, 1, 12, 8, 0),
+    );
 
     final all = await repo.loadAllGames();
     expect(all.length, 3);
