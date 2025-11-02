@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:kicker_tournament/core/logging/logger.dart';
 import 'package:kicker_tournament/core/exceptions.dart';
 
 @immutable
@@ -162,7 +163,7 @@ class Game extends Equatable {
       return fromMap(map);
     } catch (e) {
       // Log silently, return null für fehlerhafte Einträge
-      debugPrint('Failed to parse Game: $e');
+      log.w('Failed to parse Game: $e');
       return null;
     }
   }

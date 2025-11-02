@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kicker_tournament/core/logging/logger.dart';
 import 'package:kicker_tournament/core/exceptions.dart';
 import 'package:kicker_tournament/features/kicker/cubit/games_state.dart';
 import 'package:kicker_tournament/features/kicker/data/games_repository.dart';
@@ -16,7 +17,8 @@ class GamesCubit extends Cubit<GamesState> {
         games: games,
         listStatus: const OperationStatus.success(),
       ));
-    } catch (error) {
+    } catch (error, stackTrace) {
+      log.e('initLoad failed', error: error, stackTrace: stackTrace);
       emit(state.copyWith(
         listStatus: OperationStatus.failure(_mapError(error)),
       ));
@@ -44,7 +46,8 @@ class GamesCubit extends Cubit<GamesState> {
         games: games,
         saveStatus: const OperationStatus.success(),
       ));
-    } catch (error) {
+    } catch (error, stackTrace) {
+      log.e('addGame failed', error: error, stackTrace: stackTrace);
       emit(state.copyWith(
         saveStatus: OperationStatus.failure(_mapError(error)),
       ));
@@ -59,7 +62,8 @@ class GamesCubit extends Cubit<GamesState> {
         selectedGame: game,
         selectedGameStatus: const OperationStatus.success(),
       ));
-    } catch (error) {
+    } catch (error, stackTrace) {
+      log.e('selectGameById failed', error: error, stackTrace: stackTrace);
       emit(state.copyWith(
         selectedGameStatus: OperationStatus.failure(_mapError(error)),
       ));
@@ -75,7 +79,8 @@ class GamesCubit extends Cubit<GamesState> {
         games: games,
         deleteStatus: const OperationStatus.success(),
       ));
-    } catch (error) {
+    } catch (error, stackTrace) {
+      log.e('deleteGameById failed', error: error, stackTrace: stackTrace);
       emit(state.copyWith(
         deleteStatus: OperationStatus.failure(_mapError(error)),
       ));
@@ -90,7 +95,8 @@ class GamesCubit extends Cubit<GamesState> {
         leaderboard: leaderboard,
         leaderboardStatus: const OperationStatus.success(),
       ));
-    } catch (error) {
+    } catch (error, stackTrace) {
+      log.e('loadLeaderboard failed', error: error, stackTrace: stackTrace);
       emit(state.copyWith(
         leaderboardStatus: OperationStatus.failure(_mapError(error)),
       ));

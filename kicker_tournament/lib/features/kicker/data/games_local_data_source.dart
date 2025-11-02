@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
+import 'package:kicker_tournament/core/logging/logger.dart';
 import 'package:kicker_tournament/core/exceptions.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kicker_tournament/features/kicker/data/games_repository.dart';
@@ -26,8 +26,7 @@ class GamesLocalDataSource implements GamesRepository {
           // Fehlerhafte Einträge überspringen statt zu crashen
           for (final item in list) {
             if (item is! Map) {
-              debugPrint(
-                  'Skipping corrupted game entry: unexpected type ${item.runtimeType}');
+              log.w('Skipping corrupted game entry: unexpected type ${item.runtimeType}');
               continue;
             }
             final game = Game.fromMapSafe(item.cast<String, dynamic>());
@@ -36,14 +35,15 @@ class GamesLocalDataSource implements GamesRepository {
             }
           }
 
-          debugPrint('Loaded ${_store.length} games from storage');
+          log.i('Loaded ${_store.length} games from storage');
         } catch (e) {
           // JSON-Parsing fehlgeschlagen - Storage ist korrupt
-          debugPrint('Failed to parse games storage, starting fresh: $e');
+          log.e('Failed to parse games storage, starting fresh', error: e);
           _store.clear();
         }
       }
     } catch (error, stackTrace) {
+      log.e('Failed to load games from storage', error: error, stackTrace: stackTrace);
       throw StorageException(
         'Failed to load games from storage',
         cause: error,
@@ -59,6 +59,7 @@ class GamesLocalDataSource implements GamesRepository {
     final encoded = jsonEncode(_store.map((g) => g.toMap()).toList());
     final success = await prefs.setString(_kGamesKey, encoded);
     if (!success) {
+      log.e('Failed to persist games to storage');
       throw StorageException('Failed to persist games to storage');
     }
   }
@@ -138,13 +139,12 @@ class GamesLocalDataSource implements GamesRepository {
       );
     }
 
-    final leaderboard =
-        allPlayers.values.map((entry) => entry.toLeaderboardEntry()).toList()
-          ..sort((a, b) {
-            final winsComparison = b.wins.compareTo(a.wins);
-            if (winsComparison != 0) return winsComparison;
-            return b.goalDifference.compareTo(a.goalDifference);
-          });
+    final leaderboard = allPlayers.values.map((entry) => entry.toLeaderboardEntry()).toList()
+      ..sort((a, b) {
+        final winsComparison = b.wins.compareTo(a.wins);
+        if (winsComparison != 0) return winsComparison;
+        return b.goalDifference.compareTo(a.goalDifference);
+      });
     return leaderboard;
   }
 
@@ -153,8 +153,7 @@ class GamesLocalDataSource implements GamesRepository {
     await _ensureLoaded();
     final normalized = name.trim();
     if (normalized.isEmpty) {
-      throw DataFormatException('Player name is missing or empty',
-          originalData: name);
+      throw DataFormatException('Player name is missing or empty', originalData: name);
     }
     final lookup = normalized.toLowerCase();
     for (final game in _store) {
@@ -208,8 +207,7 @@ void _updateLeaderboardEntry(
   required int goalsAgainst,
   required bool didWin,
 }) {
-  final accumulator = entries.putIfAbsent(
-      player.id, () => _LeaderboardAccumulator(player: player));
+  final accumulator = entries.putIfAbsent(player.id, () => _LeaderboardAccumulator(player: player));
   accumulator.gamesPlayed += 1;
   accumulator.goalsScored += goalsFor;
   accumulator.goalsConceded += goalsAgainst;
