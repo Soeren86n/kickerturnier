@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kicker_tournament/features/kicker/cubit/games_cubit.dart';
 import 'package:kicker_tournament/features/kicker/data/games_local_data_source.dart';
 import 'package:kicker_tournament/features/kicker/data/games_repository.dart';
@@ -19,17 +20,33 @@ void main() {
     final repo = GamesRepositoryImpl(localDataSource: GamesLocalDataSource());
     final cubit = GamesCubit(gamesRepository: repo)..initLoad();
 
+    final router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const GamesListScreen(),
+        ),
+        GoRoute(
+          path: '/new',
+          builder: (context, state) => const NewGameScreen(),
+        ),
+        GoRoute(
+          path: '/game/:id',
+          builder: (context, state) {
+            final gameId = state.pathParameters['id']!;
+            return GameDetailScreen(gameId: gameId);
+          },
+        ),
+      ],
+    );
+
     return RepositoryProvider<GamesRepository>.value(
       value: repo,
       child: BlocProvider<GamesCubit>.value(
         value: cubit,
-        child: MaterialApp(
-          routes: {
-            GamesListScreen.route: (_) => const GamesListScreen(),
-            NewGameScreen.route: (_) => const NewGameScreen(),
-            GameDetailScreen.route: (_) => const GameDetailScreen(),
-          },
-          initialRoute: GamesListScreen.route,
+        child: MaterialApp.router(
+          routerConfig: router,
         ),
       ),
     );

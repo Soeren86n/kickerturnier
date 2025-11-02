@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kicker_tournament/features/kicker/cubit/games_cubit.dart';
 import 'package:kicker_tournament/features/kicker/cubit/games_state.dart';
 
@@ -43,9 +44,8 @@ class _NewGameScreenState extends State<NewGameScreen> {
                 content: Text(
                     state.saveStatus.message ?? 'Speichern fehlgeschlagen.')),
           );
-        } else if (state.saveStatus.isSuccess &&
-            Navigator.of(context).canPop()) {
-          Navigator.of(context).pop();
+        } else if (state.saveStatus.isSuccess && context.canPop()) {
+          context.pop();
         }
       },
       child: Scaffold(

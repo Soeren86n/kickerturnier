@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kicker_tournament/features/kicker/cubit/games_cubit.dart';
 import 'package:kicker_tournament/features/kicker/cubit/games_state.dart';
 import 'package:kicker_tournament/features/kicker/models/game_models.dart';
-import 'package:kicker_tournament/features/kicker/ui/game_detail_screen.dart';
-import 'package:kicker_tournament/features/kicker/ui/new_game_screen.dart';
 import 'package:kicker_tournament/utils/date_format_helper.dart';
 
 class GamesListScreen extends StatelessWidget {
@@ -90,9 +89,7 @@ class GamesListScreen extends StatelessWidget {
                 return ListTile(
                   title: Text('${game.playerA.name} ${game.goalsA} : ${game.goalsB} ${game.playerB.name}'),
                   subtitle: Text(_subtitle(game)),
-                  onTap: () {
-                    Navigator.pushNamed(context, GameDetailScreen.route, arguments: game.id);
-                  },
+                  onTap: () => context.go('/game/${game.id}'),
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline),
                     onPressed: isDeleting ? null : () => context.read<GamesCubit>().deleteGameById(game.id),
@@ -105,7 +102,7 @@ class GamesListScreen extends StatelessWidget {
         floatingActionButton: FloatingActionButton.extended(
           icon: const Icon(Icons.add),
           label: const Text('Neues Spiel'),
-          onPressed: () => Navigator.pushNamed(context, NewGameScreen.route),
+          onPressed: () => context.push('/new'),
         ),
       ),
     );

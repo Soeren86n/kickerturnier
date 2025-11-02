@@ -5,47 +5,34 @@ import 'package:kicker_tournament/features/kicker/cubit/games_state.dart';
 import 'package:kicker_tournament/utils/date_format_helper.dart';
 
 class GameDetailScreen extends StatefulWidget {
-  static const route = '/detail';
-  const GameDetailScreen({super.key});
+  final String gameId;
+  
+  const GameDetailScreen({super.key, required this.gameId});
 
   @override
   State<GameDetailScreen> createState() => _GameDetailScreenState();
 }
 
 class _GameDetailScreenState extends State<GameDetailScreen> {
-  String? _gameId;
   bool _requested = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_requested) return;
-
-    final args = ModalRoute.of(context)?.settings.arguments;
-    _gameId = args is String ? args : null;
     _requested = true;
-
-    final id = _gameId;
-    if (id != null) {
-      context.read<GamesCubit>().selectGameById(id);
-    }
+    context.read<GamesCubit>().selectGameById(widget.gameId);
   }
 
   @override
   Widget build(BuildContext context) {
-    final id = _gameId;
-    if (id == null) {
-      return const Scaffold(
-          body: Center(child: Text('Kein Spiel ausgewählt.')));
-    }
-
     return Scaffold(
       appBar: AppBar(title: const Text('Spiel-Details')),
       body: BlocBuilder<GamesCubit, GamesState>(
         builder: (context, state) {
           final status = state.selectedGameStatus;
           final game = state.selectedGame;
-          final isCurrentGame = game?.id == id;
+          final isCurrentGame = game?.id == widget.gameId;
 
           if (status.isLoading && !isCurrentGame) {
             return const Center(child: CircularProgressIndicator());
