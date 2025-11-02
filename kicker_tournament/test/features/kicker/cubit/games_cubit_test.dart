@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kicker_tournament/features/kicker/cubit/games_cubit.dart';
-import 'package:kicker_tournament/features/kicker/cubit/games_state.dart';
 import 'package:kicker_tournament/features/kicker/data/games_repository.dart';
 import 'package:kicker_tournament/features/kicker/models/game_models.dart';
 
@@ -86,8 +85,7 @@ class FakeGamesRepository implements GamesRepository {
   }) {
     final playerA = Player(id: 'player-$playerAName', name: playerAName);
     final playerB = Player(id: 'player-$playerBName', name: playerBName);
-    final winnerId =
-        goalsA == goalsB ? '' : (goalsA > goalsB ? playerA.id : playerB.id);
+    final winnerId = goalsA == goalsB ? '' : (goalsA > goalsB ? playerA.id : playerB.id);
     return Game(
       id: id,
       playerA: playerA,
@@ -116,8 +114,7 @@ class FakeGamesRepository implements GamesRepository {
       playerB: playerB,
       goalsA: goalsA,
       goalsB: goalsB,
-      winnerId: _winnerId(
-          playerA: playerA, playerB: playerB, goalsA: goalsA, goalsB: goalsB),
+      winnerId: _winnerId(playerA: playerA, playerB: playerB, goalsA: goalsA, goalsB: goalsB),
       gamePlayedAt: createdAt ?? DateTime.now(),
     );
     _games.add(game);

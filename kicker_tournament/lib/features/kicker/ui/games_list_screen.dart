@@ -26,9 +26,7 @@ class GamesListScreen extends StatelessWidget {
           );
         } else if (state.deleteStatus.isFailure) {
           messenger.showSnackBar(
-            SnackBar(
-                content: Text(
-                    state.deleteStatus.message ?? 'Löschen fehlgeschlagen.')),
+            SnackBar(content: Text(state.deleteStatus.message ?? 'Löschen fehlgeschlagen.')),
           );
         }
         if (state.saveStatus.isSuccess) {
@@ -38,9 +36,7 @@ class GamesListScreen extends StatelessWidget {
         }
         if (state.listStatus.isFailure && state.games.isNotEmpty) {
           messenger.showSnackBar(
-            SnackBar(
-                content: Text(state.listStatus.message ??
-                    'Aktualisierung fehlgeschlagen.')),
+            SnackBar(content: Text(state.listStatus.message ?? 'Aktualisierung fehlgeschlagen.')),
           );
         }
       },
@@ -58,9 +54,7 @@ class GamesListScreen extends StatelessWidget {
                 final status = cubit.state.leaderboardStatus;
                 if (status.isFailure) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(status.message ??
-                            'Rangliste konnte nicht geladen werden.')),
+                    SnackBar(content: Text(status.message ?? 'Rangliste konnte nicht geladen werden.')),
                   );
                   return;
                 }
@@ -94,19 +88,14 @@ class GamesListScreen extends StatelessWidget {
               itemBuilder: (context, index) {
                 final game = state.games[index];
                 return ListTile(
-                  title: Text(
-                      '${game.playerA.name} ${game.goalsA} : ${game.goalsB} ${game.playerB.name}'),
+                  title: Text('${game.playerA.name} ${game.goalsA} : ${game.goalsB} ${game.playerB.name}'),
                   subtitle: Text(_subtitle(game)),
                   onTap: () {
-                    Navigator.pushNamed(context, GameDetailScreen.route,
-                        arguments: game.id);
+                    Navigator.pushNamed(context, GameDetailScreen.route, arguments: game.id);
                   },
                   trailing: IconButton(
                     icon: const Icon(Icons.delete_outline),
-                    onPressed: isDeleting
-                        ? null
-                        : () =>
-                            context.read<GamesCubit>().deleteGameById(game.id),
+                    onPressed: isDeleting ? null : () => context.read<GamesCubit>().deleteGameById(game.id),
                   ),
                 );
               },
@@ -123,8 +112,9 @@ class GamesListScreen extends StatelessWidget {
   }
 
   String _subtitle(Game game) {
-    if (game.goalsA == game.goalsB)
+    if (game.goalsA == game.goalsB) {
       return 'Unentschieden · ${Utils.formatDateTime(game.gamePlayedAt)}';
+    }
     final w = game.winner?.name ?? '–';
     return 'Gewinner: $w · ${Utils.formatDateTime(game.gamePlayedAt)}';
   }
