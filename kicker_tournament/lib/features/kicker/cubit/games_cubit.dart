@@ -104,6 +104,7 @@ class GamesCubit extends Cubit<GamesState> {
   }
 
   String _mapError(Object error) {
+    if (error is ValidationException) return error.message;
     if (error is StorageException) return error.message;
     if (error is DataFormatException) return error.message;
     return error.toString();

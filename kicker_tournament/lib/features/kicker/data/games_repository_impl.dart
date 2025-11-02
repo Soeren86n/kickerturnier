@@ -1,3 +1,4 @@
+import 'package:kicker_tournament/core/domain/value_objects.dart';
 import 'package:kicker_tournament/features/kicker/data/games_local_data_source.dart';
 import 'package:kicker_tournament/features/kicker/data/games_repository.dart';
 import 'package:kicker_tournament/features/kicker/models/game_models.dart';
@@ -20,6 +21,10 @@ class GamesRepositoryImpl implements GamesRepository {
     required int goalsB,
     DateTime? createdAt,
   }) {
+    // Validate goals at domain layer (throws ValidationException if invalid)
+    Goals(goalsA);
+    Goals(goalsB);
+    
     return _local.addGame(
       playerA: playerA,
       playerB: playerB,
@@ -42,5 +47,9 @@ class GamesRepositoryImpl implements GamesRepository {
   Future<List<LeaderboardEntry>> loadLeaderboard() => _local.loadLeaderboard();
 
   @override
-  Future<Player> upsertPlayerByName(String name) => _local.upsertPlayerByName(name);
+  Future<Player> upsertPlayerByName(String name) {
+    // Validate player name at domain layer (throws ValidationException if invalid)
+    PlayerName(name);
+    return _local.upsertPlayerByName(name);
+  }
 }

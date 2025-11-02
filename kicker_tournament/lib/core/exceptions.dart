@@ -36,3 +36,19 @@ class StorageException implements Exception {
     return buffer.toString();
   }
 }
+
+/// Exception für Validierungsfehler auf Domain-Ebene
+class ValidationException implements Exception {
+  final String message;
+  final String? field;
+
+  ValidationException(this.message, {this.field});
+
+  @override
+  String toString() {
+    if (field != null) {
+      return 'ValidationException [$field]: $message';
+    }
+    return 'ValidationException: $message';
+  }
+}
