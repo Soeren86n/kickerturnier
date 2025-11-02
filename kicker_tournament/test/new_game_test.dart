@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:kicker_tournament/features/kicker/cubit/games_cubit.dart';
 import 'package:kicker_tournament/features/kicker/data/games_local_data_source.dart';
 import 'package:kicker_tournament/features/kicker/data/games_repository.dart';
+import 'package:kicker_tournament/features/kicker/data/games_repository_impl.dart';
 import 'package:kicker_tournament/features/kicker/ui/game_detail_screen.dart';
 import 'package:kicker_tournament/features/kicker/ui/games_list_screen.dart';
 import 'package:kicker_tournament/features/kicker/ui/new_game_screen.dart';
@@ -15,7 +16,7 @@ void main() {
   });
 
   Widget buildTestApp() {
-    final repo = GamesLocalDataSource();
+    final repo = GamesRepositoryImpl(localDataSource: GamesLocalDataSource());
     final cubit = GamesCubit(gamesRepository: repo)..initLoad();
 
     return RepositoryProvider<GamesRepository>.value(
@@ -34,8 +35,7 @@ void main() {
     );
   }
 
-  testWidgets('create new game an appears in list',
-      (WidgetTester tester) async {
+  testWidgets('create new game an appears in list', (WidgetTester tester) async {
     await tester.pumpWidget(buildTestApp());
     await tester.pumpAndSettle();
 

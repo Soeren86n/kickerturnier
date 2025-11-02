@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kicker_tournament/core/di/locator.dart';
 import 'package:kicker_tournament/features/kicker/cubit/games_cubit.dart';
-import 'package:kicker_tournament/features/kicker/data/games_local_data_source.dart';
 import 'package:kicker_tournament/features/kicker/data/games_repository.dart';
 import 'package:kicker_tournament/features/kicker/ui/game_detail_screen.dart';
 import 'package:kicker_tournament/features/kicker/ui/games_list_screen.dart';
@@ -12,12 +12,10 @@ class KickerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider<GamesRepository>(
-      create: (_) => GamesLocalDataSource(),
+    return RepositoryProvider<GamesRepository>.value(
+      value: getIt<GamesRepository>(),
       child: BlocProvider(
-        create: (context) =>
-            GamesCubit(gamesRepository: context.read<GamesRepository>())
-              ..initLoad(),
+        create: (context) => GamesCubit(gamesRepository: context.read<GamesRepository>())..initLoad(),
         child: MaterialApp(
           title: 'Kicker Turnier',
           debugShowCheckedModeBanner: false,
