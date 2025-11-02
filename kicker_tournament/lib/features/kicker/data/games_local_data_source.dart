@@ -20,7 +20,7 @@ class GamesLocalDataSource implements GamesRepository {
 
       if (jsonString != null && jsonString.isNotEmpty) {
         try {
-          final List<dynamic> list = jsonDecode(jsonString);
+          final List<dynamic> list = jsonDecode(jsonString) as List<dynamic>;
           _store.clear();
 
           // Fehlerhafte Einträge überspringen statt zu crashen

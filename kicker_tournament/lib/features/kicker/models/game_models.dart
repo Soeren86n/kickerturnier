@@ -168,7 +168,7 @@ class Game extends Equatable {
     }
   }
 
-  static Game fromJson(String source) => fromMap(jsonDecode(source));
+  static Game fromJson(String source) => fromMap(jsonDecode(source) as Map<String, dynamic>);
 
   @override
   List<Object?> get props => [

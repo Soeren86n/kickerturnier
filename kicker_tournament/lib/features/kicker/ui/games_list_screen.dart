@@ -118,7 +118,7 @@ class GamesListScreen extends StatelessWidget {
 
   void _showLeaderboard(BuildContext context) {
     final state = context.read<GamesCubit>().state;
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       builder: (_) {
