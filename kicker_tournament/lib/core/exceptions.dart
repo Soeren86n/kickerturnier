@@ -22,10 +22,17 @@ class DataFormatException implements Exception {
 /// Exception für Storage-/Persistence-Fehler
 class StorageException implements Exception {
   final String message;
-  final Exception? cause;
+  final Object? cause;
+  final StackTrace? stackTrace;
 
-  StorageException(this.message, {this.cause});
+  StorageException(this.message, {this.cause, this.stackTrace});
 
   @override
-  String toString() => 'StorageException: $message${cause != null ? ' (Cause: $cause)' : ''}';
+  String toString() {
+    final buffer = StringBuffer('StorageException: $message');
+    if (cause != null) {
+      buffer.write(' (Cause: $cause)');
+    }
+    return buffer.toString();
+  }
 }

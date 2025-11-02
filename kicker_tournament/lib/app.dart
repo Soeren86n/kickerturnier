@@ -12,12 +12,12 @@ class KickerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final GamesRepository gamesRepository = GamesLocalDataSource();
-
-    return RepositoryProvider<GamesRepository>.value(
-      value: gamesRepository,
+    return RepositoryProvider<GamesRepository>(
+      create: (_) => GamesLocalDataSource(),
       child: BlocProvider(
-        create: (_) => GamesCubit(gamesRepository: gamesRepository)..initLoad(),
+        create: (context) =>
+            GamesCubit(gamesRepository: context.read<GamesRepository>())
+              ..initLoad(),
         child: MaterialApp(
           title: 'Kicker Turnier',
           debugShowCheckedModeBanner: false,

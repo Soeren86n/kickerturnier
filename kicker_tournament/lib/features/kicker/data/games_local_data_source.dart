@@ -25,13 +25,14 @@ class GamesLocalDataSource implements GamesRepository {
 
           // Fehlerhafte Einträge überspringen statt zu crashen
           for (final item in list) {
-            try {
-              final map = (item as Map).cast<String, dynamic>();
-              final game = Game.fromMap(map);
+            if (item is! Map) {
+              debugPrint(
+                  'Skipping corrupted game entry: unexpected type ${item.runtimeType}');
+              continue;
+            }
+            final game = Game.fromMapSafe(item.cast<String, dynamic>());
+            if (game != null) {
               _store.add(game);
-            } catch (e) {
-              // Einzelnen fehlerhaften Eintrag loggen und überspringen
-              debugPrint('Skipping corrupted game entry: $e');
             }
           }
 
@@ -42,8 +43,12 @@ class GamesLocalDataSource implements GamesRepository {
           _store.clear();
         }
       }
-    } catch (e) {
-      throw StorageException('Failed to load games from storage', cause: e as Exception?);
+    } catch (error, stackTrace) {
+      throw StorageException(
+        'Failed to load games from storage',
+        cause: error,
+        stackTrace: stackTrace,
+      );
     }
 
     _loaded = true;
@@ -52,7 +57,10 @@ class GamesLocalDataSource implements GamesRepository {
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
     final encoded = jsonEncode(_store.map((g) => g.toMap()).toList());
-    await prefs.setString(_kGamesKey, encoded);
+    final success = await prefs.setString(_kGamesKey, encoded);
+    if (!success) {
+      throw StorageException('Failed to persist games to storage');
+    }
   }
 
   @override
@@ -111,71 +119,55 @@ class GamesLocalDataSource implements GamesRepository {
   @override
   Future<List<LeaderboardEntry>> loadLeaderboard() async {
     await _ensureLoaded();
-    final Map<String, LeaderboardEntry> allPlayers = {};
+    final Map<String, _LeaderboardAccumulator> allPlayers = {};
 
     for (final game in _store) {
-      if (!allPlayers.containsKey(game.playerA.id)) {
-        allPlayers[game.playerA.id] = LeaderboardEntry(
-          player: game.playerA,
-          wins: 0,
-          goalsScored: 0,
-          goalsConceded: 0,
-          gamesPlayed: 0,
-        );
-      }
-
-      final entryA = allPlayers[game.playerA.id]!;
-      allPlayers[game.playerA.id] = LeaderboardEntry(
-        player: entryA.player,
-        wins: entryA.wins + (game.winnerId == game.playerA.id ? 1 : 0),
-        goalsScored: entryA.goalsScored + game.goalsA,
-        goalsConceded: entryA.goalsConceded + game.goalsB,
-        gamesPlayed: entryA.gamesPlayed + 1,
+      _updateLeaderboardEntry(
+        allPlayers,
+        player: game.playerA,
+        goalsFor: game.goalsA,
+        goalsAgainst: game.goalsB,
+        didWin: game.winnerId == game.playerA.id,
       );
-
-      if (!allPlayers.containsKey(game.playerB.id)) {
-        allPlayers[game.playerB.id] = LeaderboardEntry(
-          player: game.playerB,
-          wins: 0,
-          goalsScored: 0,
-          goalsConceded: 0,
-          gamesPlayed: 0,
-        );
-      }
-
-      final entryB = allPlayers[game.playerB.id]!;
-      allPlayers[game.playerB.id] = LeaderboardEntry(
-        player: entryB.player,
-        wins: entryB.wins + (game.winnerId == game.playerB.id ? 1 : 0),
-        goalsScored: entryB.goalsScored + game.goalsB,
-        goalsConceded: entryB.goalsConceded + game.goalsA,
-        gamesPlayed: entryB.gamesPlayed + 1,
+      _updateLeaderboardEntry(
+        allPlayers,
+        player: game.playerB,
+        goalsFor: game.goalsB,
+        goalsAgainst: game.goalsA,
+        didWin: game.winnerId == game.playerB.id,
       );
     }
 
-    final leaderboard = allPlayers.values.toList()
-      ..sort((a, b) {
-        final winsComparison = b.wins.compareTo(a.wins);
-        if (winsComparison != 0) return winsComparison;
-        return b.goalDifference.compareTo(a.goalDifference);
-      });
+    final leaderboard =
+        allPlayers.values.map((entry) => entry.toLeaderboardEntry()).toList()
+          ..sort((a, b) {
+            final winsComparison = b.wins.compareTo(a.wins);
+            if (winsComparison != 0) return winsComparison;
+            return b.goalDifference.compareTo(a.goalDifference);
+          });
     return leaderboard;
   }
 
   @override
   Future<Player> upsertPlayerByName(String name) async {
     await _ensureLoaded();
+    final normalized = name.trim();
+    if (normalized.isEmpty) {
+      throw DataFormatException('Player name is missing or empty',
+          originalData: name);
+    }
+    final lookup = normalized.toLowerCase();
     for (final game in _store) {
-      if (game.playerA.name == name) {
+      if (game.playerA.name.toLowerCase() == lookup) {
         return game.playerA;
       }
-      if (game.playerB.name == name) {
+      if (game.playerB.name.toLowerCase() == lookup) {
         return game.playerB;
       }
     }
 
     final id = const Uuid().v4();
-    final newPlayer = Player(id: id, name: name);
+    final newPlayer = Player(id: id, name: normalized);
     return newPlayer;
   }
 
@@ -188,5 +180,40 @@ class GamesLocalDataSource implements GamesRepository {
     if (goalsA > goalsB) return playerA.id;
     if (goalsB > goalsA) return playerB.id;
     return '';
+  }
+}
+
+class _LeaderboardAccumulator {
+  _LeaderboardAccumulator({required this.player});
+
+  final Player player;
+  int wins = 0;
+  int goalsScored = 0;
+  int goalsConceded = 0;
+  int gamesPlayed = 0;
+
+  LeaderboardEntry toLeaderboardEntry() => LeaderboardEntry(
+        player: player,
+        wins: wins,
+        goalsScored: goalsScored,
+        goalsConceded: goalsConceded,
+        gamesPlayed: gamesPlayed,
+      );
+}
+
+void _updateLeaderboardEntry(
+  Map<String, _LeaderboardAccumulator> entries, {
+  required Player player,
+  required int goalsFor,
+  required int goalsAgainst,
+  required bool didWin,
+}) {
+  final accumulator = entries.putIfAbsent(
+      player.id, () => _LeaderboardAccumulator(player: player));
+  accumulator.gamesPlayed += 1;
+  accumulator.goalsScored += goalsFor;
+  accumulator.goalsConceded += goalsAgainst;
+  if (didWin) {
+    accumulator.wins += 1;
   }
 }

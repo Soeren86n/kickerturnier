@@ -13,75 +13,118 @@ class GamesListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Spiele'),
-        actions: [
-          IconButton(
-            tooltip: 'Rangliste',
-            icon: const Icon(Icons.leaderboard),
-            onPressed: () async {
-              final cubit = context.read<GamesCubit>();
-              await cubit.loadLeaderboard();
-              if (!context.mounted) return;
-              _showLeaderboard(context);
-            },
-          ),
-          IconButton(
-            tooltip: 'Aktualisieren',
-            icon: const Icon(Icons.refresh),
-            onPressed: () => context.read<GamesCubit>().initLoad(),
-          ),
-        ],
-      ),
-      body: BlocBuilder<GamesCubit, GamesState>(
-        builder: (context, state) {
-          if (state.isLoading && state.games.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state.hasError) {
-            return const Center(child: Text('Fehler beim Laden.'));
-          }
-          if (state.games.isEmpty) {
-            return const Center(child: Text('Noch keine Spiele erfasst.'));
-          }
-          return ListView.separated(
-            itemCount: state.games.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final game = state.games[index];
-              return ListTile(
-                title: Text('${game.playerA.name} ${game.goalsA} : ${game.goalsB} ${game.playerB.name}'),
-                subtitle: Text(_subtitle(game)),
-                onTap: () {
-                  Navigator.pushNamed(context, GameDetailScreen.route, arguments: game.id);
-                },
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: () async {
-                    await context.read<GamesCubit>().deleteGameById(game.id);
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Spiel gelöscht')),
-                      );
-                    }
-                  },
-                ),
-              );
-            },
+    return BlocListener<GamesCubit, GamesState>(
+      listenWhen: (previous, current) =>
+          previous.deleteStatus != current.deleteStatus ||
+          previous.saveStatus != current.saveStatus ||
+          previous.listStatus != current.listStatus,
+      listener: (context, state) {
+        final messenger = ScaffoldMessenger.of(context);
+        if (state.deleteStatus.isSuccess) {
+          messenger.showSnackBar(
+            const SnackBar(content: Text('Spiel gelöscht')),
           );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        icon: const Icon(Icons.add),
-        label: const Text('Neues Spiel'),
-        onPressed: () => Navigator.pushNamed(context, NewGameScreen.route),
+        } else if (state.deleteStatus.isFailure) {
+          messenger.showSnackBar(
+            SnackBar(
+                content: Text(
+                    state.deleteStatus.message ?? 'Löschen fehlgeschlagen.')),
+          );
+        }
+        if (state.saveStatus.isSuccess) {
+          messenger.showSnackBar(
+            const SnackBar(content: Text('Spiel gespeichert')),
+          );
+        }
+        if (state.listStatus.isFailure && state.games.isNotEmpty) {
+          messenger.showSnackBar(
+            SnackBar(
+                content: Text(state.listStatus.message ??
+                    'Aktualisierung fehlgeschlagen.')),
+          );
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Spiele'),
+          actions: [
+            IconButton(
+              tooltip: 'Rangliste',
+              icon: const Icon(Icons.leaderboard),
+              onPressed: () async {
+                final cubit = context.read<GamesCubit>();
+                await cubit.loadLeaderboard();
+                if (!context.mounted) return;
+                final status = cubit.state.leaderboardStatus;
+                if (status.isFailure) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text(status.message ??
+                            'Rangliste konnte nicht geladen werden.')),
+                  );
+                  return;
+                }
+                _showLeaderboard(context);
+              },
+            ),
+            IconButton(
+              tooltip: 'Aktualisieren',
+              icon: const Icon(Icons.refresh),
+              onPressed: () => context.read<GamesCubit>().initLoad(),
+            ),
+          ],
+        ),
+        body: BlocBuilder<GamesCubit, GamesState>(
+          builder: (context, state) {
+            if (state.listStatus.isLoading && state.games.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state.listStatus.isFailure && state.games.isEmpty) {
+              return Center(
+                child: Text(state.listStatus.message ?? 'Fehler beim Laden.'),
+              );
+            }
+            if (state.games.isEmpty) {
+              return const Center(child: Text('Noch keine Spiele erfasst.'));
+            }
+            final isDeleting = state.deleteStatus.isLoading;
+            return ListView.separated(
+              itemCount: state.games.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final game = state.games[index];
+                return ListTile(
+                  title: Text(
+                      '${game.playerA.name} ${game.goalsA} : ${game.goalsB} ${game.playerB.name}'),
+                  subtitle: Text(_subtitle(game)),
+                  onTap: () {
+                    Navigator.pushNamed(context, GameDetailScreen.route,
+                        arguments: game.id);
+                  },
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: isDeleting
+                        ? null
+                        : () =>
+                            context.read<GamesCubit>().deleteGameById(game.id),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          icon: const Icon(Icons.add),
+          label: const Text('Neues Spiel'),
+          onPressed: () => Navigator.pushNamed(context, NewGameScreen.route),
+        ),
       ),
     );
   }
 
   String _subtitle(Game game) {
-    if (game.goalsA == game.goalsB) return 'Unentschieden · ${Utils.formatDateTime(game.gamePlayedAt)}';
+    if (game.goalsA == game.goalsB)
+      return 'Unentschieden · ${Utils.formatDateTime(game.gamePlayedAt)}';
     final w = game.winner?.name ?? '–';
     return 'Gewinner: $w · ${Utils.formatDateTime(game.gamePlayedAt)}';
   }

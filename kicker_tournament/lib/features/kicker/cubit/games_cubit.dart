@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kicker_tournament/core/exceptions.dart';
 import 'package:kicker_tournament/features/kicker/cubit/games_state.dart';
 import 'package:kicker_tournament/features/kicker/data/games_repository.dart';
 
@@ -8,15 +9,17 @@ class GamesCubit extends Cubit<GamesState> {
   GamesCubit({required this.gamesRepository}) : super(const GamesState());
 
   Future<void> initLoad() async {
-    emit(state.copyWith(isLoading: true, hasError: false));
+    emit(state.copyWith(listStatus: const OperationStatus.loading()));
     try {
       final games = await gamesRepository.loadAllGames();
       emit(state.copyWith(
-        isLoading: false,
         games: games,
+        listStatus: const OperationStatus.success(),
       ));
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, hasError: true));
+    } catch (error) {
+      emit(state.copyWith(
+        listStatus: OperationStatus.failure(_mapError(error)),
+      ));
     }
   }
 
@@ -26,7 +29,7 @@ class GamesCubit extends Cubit<GamesState> {
     required int goalsA,
     required int goalsB,
   }) async {
-    emit(state.copyWith(isLoading: true, hasError: false));
+    emit(state.copyWith(saveStatus: const OperationStatus.loading()));
     try {
       final playerA = await gamesRepository.upsertPlayerByName(nameA);
       final playerB = await gamesRepository.upsertPlayerByName(nameB);
@@ -38,48 +41,65 @@ class GamesCubit extends Cubit<GamesState> {
       );
       final games = await gamesRepository.loadAllGames();
       emit(state.copyWith(
-        isLoading: false,
         games: games,
+        saveStatus: const OperationStatus.success(),
       ));
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, hasError: true));
+    } catch (error) {
+      emit(state.copyWith(
+        saveStatus: OperationStatus.failure(_mapError(error)),
+      ));
     }
   }
 
   Future<void> selectGameById(String id) async {
-    emit(state.copyWith(isLoading: true, hasError: false));
+    emit(state.copyWith(selectedGameStatus: const OperationStatus.loading()));
     try {
       final game = await gamesRepository.getGameById(id);
-      emit(state.copyWith(isLoading: false, selectedGame: game));
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, hasError: true));
+      emit(state.copyWith(
+        selectedGame: game,
+        selectedGameStatus: const OperationStatus.success(),
+      ));
+    } catch (error) {
+      emit(state.copyWith(
+        selectedGameStatus: OperationStatus.failure(_mapError(error)),
+      ));
     }
   }
 
   Future<void> deleteGameById(String id) async {
-    emit(state.copyWith(isLoading: true, hasError: false));
+    emit(state.copyWith(deleteStatus: const OperationStatus.loading()));
     try {
       await gamesRepository.deleteGameByID(id);
       final games = await gamesRepository.loadAllGames();
       emit(state.copyWith(
-        isLoading: false,
         games: games,
+        deleteStatus: const OperationStatus.success(),
       ));
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, hasError: true));
+    } catch (error) {
+      emit(state.copyWith(
+        deleteStatus: OperationStatus.failure(_mapError(error)),
+      ));
     }
   }
 
   Future<void> loadLeaderboard() async {
-    emit(state.copyWith(isLoading: true, hasError: false));
+    emit(state.copyWith(leaderboardStatus: const OperationStatus.loading()));
     try {
       final leaderboard = await gamesRepository.loadLeaderboard();
       emit(state.copyWith(
-        isLoading: false,
         leaderboard: leaderboard,
+        leaderboardStatus: const OperationStatus.success(),
       ));
-    } catch (e) {
-      emit(state.copyWith(isLoading: false, hasError: true));
+    } catch (error) {
+      emit(state.copyWith(
+        leaderboardStatus: OperationStatus.failure(_mapError(error)),
+      ));
     }
+  }
+
+  String _mapError(Object error) {
+    if (error is StorageException) return error.message;
+    if (error is DataFormatException) return error.message;
+    return error.toString();
   }
 }

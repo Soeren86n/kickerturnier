@@ -34,7 +34,8 @@ void main() {
     );
   }
 
-  testWidgets('create new game an appears in list', (WidgetTester tester) async {
+  testWidgets('create new game an appears in list',
+      (WidgetTester tester) async {
     await tester.pumpWidget(buildTestApp());
     await tester.pumpAndSettle();
 

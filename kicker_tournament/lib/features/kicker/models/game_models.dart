@@ -119,7 +119,7 @@ class Game extends Equatable {
       }
 
       final winnerId = map['winnerId'] as String? ?? '';
-      
+
       final gamePlayedAtString = map['gamePlayedAt'] as String?;
       if (gamePlayedAtString == null || gamePlayedAtString.isEmpty) {
         throw DataFormatException(
@@ -200,5 +200,6 @@ class LeaderboardEntry extends Equatable {
   int get goalDifference => goalsScored - goalsConceded;
 
   @override
-  List<Object?> get props => [player, wins, goalsScored, goalsConceded, gamesPlayed];
+  List<Object?> get props =>
+      [player, wins, goalsScored, goalsConceded, gamesPlayed];
 }

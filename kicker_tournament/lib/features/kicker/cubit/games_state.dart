@@ -1,46 +1,96 @@
 import 'package:equatable/equatable.dart';
 import 'package:kicker_tournament/features/kicker/models/game_models.dart';
 
-class GamesState extends Equatable {
-  final bool isLoading;
-  final bool hasError;
+enum OperationState { idle, loading, success, failure }
 
+class OperationStatus extends Equatable {
+  final OperationState state;
+  final String? message;
+
+  const OperationStatus._(this.state, this.message);
+
+  const OperationStatus.idle() : this._(OperationState.idle, null);
+  const OperationStatus.loading() : this._(OperationState.loading, null);
+  const OperationStatus.success() : this._(OperationState.success, null);
+  const OperationStatus.failure(String? message)
+      : this._(OperationState.failure, message);
+
+  bool get isIdle => state == OperationState.idle;
+  bool get isLoading => state == OperationState.loading;
+  bool get isSuccess => state == OperationState.success;
+  bool get isFailure => state == OperationState.failure;
+
+  OperationStatus copyWith({
+    OperationState? state,
+    String? message,
+  }) {
+    return OperationStatus._(
+      state ?? this.state,
+      state == OperationState.failure ? (message ?? this.message) : null,
+    );
+  }
+
+  @override
+  List<Object?> get props => [state, message];
+}
+
+class GamesState extends Equatable {
   final List<Game> games;
   final Game? selectedGame;
-  static const Object _noValue = Object();
-
   final List<LeaderboardEntry> leaderboard;
 
+  final OperationStatus listStatus;
+  final OperationStatus saveStatus;
+  final OperationStatus deleteStatus;
+  final OperationStatus leaderboardStatus;
+  final OperationStatus selectedGameStatus;
+
+  static const Object _noValue = Object();
+
   const GamesState({
-    this.isLoading = false,
-    this.hasError = false,
     this.games = const [],
     this.selectedGame,
     this.leaderboard = const [],
+    this.listStatus = const OperationStatus.idle(),
+    this.saveStatus = const OperationStatus.idle(),
+    this.deleteStatus = const OperationStatus.idle(),
+    this.leaderboardStatus = const OperationStatus.idle(),
+    this.selectedGameStatus = const OperationStatus.idle(),
   });
 
   GamesState copyWith({
-    bool? isLoading,
-    bool? hasError,
     List<Game>? games,
     Object? selectedGame = _noValue,
     List<LeaderboardEntry>? leaderboard,
+    OperationStatus? listStatus,
+    OperationStatus? saveStatus,
+    OperationStatus? deleteStatus,
+    OperationStatus? leaderboardStatus,
+    OperationStatus? selectedGameStatus,
   }) {
     return GamesState(
-      isLoading: isLoading ?? this.isLoading,
-      hasError: hasError ?? this.hasError,
       games: games ?? this.games,
-      selectedGame: identical(selectedGame, _noValue) ? this.selectedGame : selectedGame as Game?,
+      selectedGame: identical(selectedGame, _noValue)
+          ? this.selectedGame
+          : selectedGame as Game?,
       leaderboard: leaderboard ?? this.leaderboard,
+      listStatus: listStatus ?? this.listStatus,
+      saveStatus: saveStatus ?? this.saveStatus,
+      deleteStatus: deleteStatus ?? this.deleteStatus,
+      leaderboardStatus: leaderboardStatus ?? this.leaderboardStatus,
+      selectedGameStatus: selectedGameStatus ?? this.selectedGameStatus,
     );
   }
 
   @override
   List<Object?> get props => [
-        isLoading,
-        hasError,
         games,
         selectedGame,
         leaderboard,
+        listStatus,
+        saveStatus,
+        deleteStatus,
+        leaderboardStatus,
+        selectedGameStatus,
       ];
 }
